@@ -22,7 +22,6 @@ export default async function (req, res, next) {
       throw new Error("토큰 사용자가 존재하지 않습니다.");
     }
 
-    // req.user에 사용자 정보를 저장합니다.
     req.user = user;
 
     next();
