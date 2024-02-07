@@ -4,6 +4,7 @@ import { prisma } from "../utils/prisma/index.js";
 
 const router = express.Router();
 
+// 팔로우 및 언팔로우 기능
 router.post("/follow", authMiddleware, async (req, res, next) => {
   const followerId = req.body;
   const { userId } = req.user;
@@ -48,7 +49,8 @@ router.post("/follow", authMiddleware, async (req, res, next) => {
     .json({ message: `${user.name}님을 팔로우 하셨습니다!` });
 });
 
-router.get("/follow/:userId", authMiddleware, async (req, res, next) => {
+// 특정 유저의 follower 목록 요청
+router.get("/follower/:userId", authMiddleware, async (req, res, next) => {
   const userId = req.params;
   const myUser = req.user;
 
@@ -60,21 +62,79 @@ router.get("/follow/:userId", authMiddleware, async (req, res, next) => {
     return res.status(400).json({ message: "유저 정보가 올바르지 않습니다." });
 
   if (user.locked === "lock") {
-    const checkFollower = await prisma.follow.findMany({
-      where: {
-        or: [
-          { and: [{ followerId: user.userId }, { followingId: myUser }] },
-          { and: [{ followerId: myUser }, { followingId: user.userId }] },
-        ],
-      },
-    });
-
-    if (checkFollower.length !== 2) {
-      return res.status(400).json({
-        message:
-          "이 유저의 follow정보는 비공개입니다. 열람하시려면 서로 follow한 상태이어야 합니다.",
+    if (userId !== myUser) {
+      const checkFollower = await prisma.follow.findMany({
+        where: {
+          or: [
+            { and: [{ followerId: user.userId }, { followingId: myUser }] },
+            { and: [{ followerId: myUser }, { followingId: user.userId }] },
+          ],
+        },
       });
+
+      if (checkFollower.length !== 2) {
+        return res.status(400).json({
+          message:
+            "이 유저의 follow정보는 비공개입니다. 열람하시려면 서로 follow한 상태이어야 합니다.",
+        });
+      }
     }
-    // 작성 중...
   }
+  const follower = await prisma.follow.findMany({
+    where: { followingId: user.userId },
+    select: {
+      users: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  return res.status(200).json({ data: follower });
+});
+
+// 특정 유저의 following 목록 요청
+router.get("/following/:userId", authMiddleware, async (req, res, next) => {
+  const userId = req.params;
+  const myUser = req.user;
+
+  const user = await prisma.users.findFirst({
+    where: { userId: +userId },
+  });
+
+  if (!user)
+    return res.status(400).json({ message: "유저 정보가 올바르지 않습니다." });
+
+  if (user.locked === "lock") {
+    if (userId !== myUser) {
+      const checkFollower = await prisma.follow.findMany({
+        where: {
+          or: [
+            { and: [{ followerId: user.userId }, { followingId: myUser }] },
+            { and: [{ followerId: myUser }, { followingId: user.userId }] },
+          ],
+        },
+      });
+
+      if (checkFollower.length !== 2) {
+        return res.status(400).json({
+          message:
+            "이 유저의 follow정보는 비공개입니다. 열람하시려면 서로 follow한 상태이어야 합니다.",
+        });
+      }
+    }
+  }
+  const following = await prisma.follow.findMany({
+    where: { followerId: user.userId },
+    select: {
+      users: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  return res.status(200).json({ data: following });
 });
