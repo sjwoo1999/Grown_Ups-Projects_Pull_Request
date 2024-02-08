@@ -138,3 +138,31 @@ router.get("/following/:userId", authMiddleware, async (req, res, next) => {
 
   return res.status(200).json({ data: following });
 });
+
+// 특정 유저의 팔로워, 팔로잉 수 조회
+router.get('/follow/:userId', async (req,res,next) => {
+    const userId = req.params;
+
+    const user = await prisma.users.findFirst({
+        where: {userId: +userId}
+    });
+
+    if(!user)
+        return res.status(400).json({message: "유저 정보가 올바르지 않습니다."});
+    
+    const follower = await prisma.follow.count({
+        where: {followingId :  user.userId}
+    });
+
+    const following = await prisma.follow.count({
+        where: {followerId : user.userId}
+    });
+
+    if(!follower)
+        follower = 0;
+
+    if(!following)
+        following = 0;
+
+    return res.status(200).json({follower: follower, following: following});
+})
