@@ -36,7 +36,7 @@ model Users {
 
 model Posts {
   postId         Int     @id @default(autoincrement()) @map("postId")
-  userId         Int    @map("userId")
+  userId         Int?    @map("userId")
   title          String  @map("title")
   content        String  @map("content") @db.Text
   thumbnailImage String? @map("thumbnailImage")
