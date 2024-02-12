@@ -202,3 +202,5 @@ router.delete(
 );
 
 export default router;
+
+// git user.email 설정 체크 중
