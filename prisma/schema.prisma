@@ -26,7 +26,7 @@ model Users {
   createdAt DateTime @default(now()) @map("createdAt")
   updatedAt DateTime @updatedAt @map("updatedAt")
 
-  //posts     Posts[]
+  posts     Posts[]
   comments  Comments[]
   follower  Follow[]   @relation("follower")
   following Follow[]   @relation("following")
@@ -36,7 +36,7 @@ model Users {
 
 model Posts {
   postId         Int     @id @default(autoincrement()) @map("postId")
-  userId         Int?    @map("userId")
+  userId         Int    @map("userId")
   title          String  @map("title")
   content        String  @map("content") @db.Text
   thumbnailImage String? @map("thumbnailImage")
@@ -45,7 +45,7 @@ model Posts {
   createdAt DateTime @default(now()) @map("createdAt")
   updatedAt DateTime @updatedAt @map("updatedAt")
 
-  //user       Users        @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  user       Users        @relation(fields: [userId], references: [userId], onDelete: Cascade)
   comments   Comments[]
   post_emoji Post_emoji[]
 
