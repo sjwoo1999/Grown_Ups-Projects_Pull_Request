@@ -16,12 +16,13 @@ model Users {
   email      String? @unique @map("email")
   name       String? @map("name")
   password   String? @map("password")
-  role       String  @map("role")
-  gender     String  @map("gender")
-  age        Int     @map("age")
-  oneliner   String  @map("oneliner")
-  status     String  @map("status")
-  technology String  @map("technology")
+  role       role    @default(user) @map("role")
+  gender     String? @map("gender")
+  age        Int?    @map("age")
+  oneliner   String? @map("oneliner")
+  status     status  @map("status")
+  technology String? @map("technology")
+  locked     locked? @default(unlock) @map("locked")
 
   createdAt DateTime @default(now()) @map("createdAt")
   updatedAt DateTime @updatedAt @map("updatedAt")
@@ -35,12 +36,12 @@ model Users {
 }
 
 model Posts {
-  postId         Int     @id @default(autoincrement()) @map("postId")
+  postId         Int    @id @default(autoincrement()) @map("postId")
   userId         Int    @map("userId")
-  title          String  @map("title")
-  content        String  @map("content") @db.Text
+  title          String @map("title")
+  content        String @map("content") @db.Text
   thumbnailImage String? @map("thumbnailImage")
-  category       String  @map("category")
+  category       String @map("category")
 
   createdAt DateTime @default(now()) @map("createdAt")
   updatedAt DateTime @updatedAt @map("updatedAt")
@@ -93,9 +94,26 @@ model Comment_emoji {
 model Post_emoji {
   post_likeId String @id @default(uuid()) @map("post_likeId")
   postId      Int    @map("postId")
-  emojiCode   String @map("emojiCode")
+  emojiCode   String    @map("emojiCode")
 
-  posts Posts @relation(fields: [postId], references: [postId])
+  Posts Posts? @relation(fields: [postId], references: [postId])
 
   @@map("Post_emoji")
+}
+
+enum role {
+  admin
+  user
+  employee
+}
+
+enum status {
+  worker
+  job_seeker
+  change_job
+}
+
+enum locked {
+  lock
+  unlock
 }
